@@ -1,0 +1,94 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "somrchic",
+      "password": "Qaz321$321",
+      "email": "javapractic@gmail.com",
+      "createdAt": "27.04.2026, 16:07:16"
+    },
+    {
+      "id": 2,
+      "username": "qwerchic",
+      "password": "Qaz321$321",
+      "email": "javapractic@gmail.com",
+      "createdAt": "28.04.2026, 15:28:31"
+    },
+    {
+      "id": 3,
+      "username": "Anon",
+      "password": "Qaz$321",
+      "email": "javapractic@gmail.com",
+      "createdAt": "29.05.2026, 15:30:43"
+    },
+    {
+      "id": 4,
+      "username": "Dondon",
+      "password": "Qaz321$321",
+      "email": "",
+      "createdAt": "08.06.2026, 14:32:43"
+    }
+  ],
+  "posts": {
+    "general": [
+      {
+        "id": 4,
+        "author": "Dondon",
+        "email": "",
+        "content": "gross",
+        "time": "08.06.2026 14:32:58",
+        "comments": []
+      },
+      {
+        "id": 3,
+        "author": "somrchic",
+        "email": "javapractic@gmail.com",
+        "content": "halo\n",
+        "time": "27.04.2026 16:07:27",
+        "comments": []
+      },
+      {
+        "id": 1,
+        "author": "Аноним",
+        "email": "",
+        "content": "Добро пожаловать на КР! Это доска для общения и обмена информацией.",
+        "time": "2026-03-02 14:23",
+        "comments": [
+          {
+            "id": 1,
+            "author": "Юзер",
+            "email": "user@example.com",
+            "content": "Спасибо за информацию!",
+            "time": "2026-03-02 14:24"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "author": "Юзер",
+        "email": "user@example.com",
+        "content": "Привет всем! Как дела?",
+        "time": "2026-03-02 14:25",
+        "comments": [
+          {
+            "id": 1,
+            "author": "Друг",
+            "email": "",
+            "content": "Привет! Все отлично!",
+            "time": "2026-03-02 14:26"
+          }
+        ]
+      }
+    ],
+    "tech": [],
+    "games": [],
+    "art": [],
+    "education": [],
+    "music": [],
+    "anime": [],
+    "movies": [],
+    "dramas": [],
+    "sports": [],
+    "random": []
+  }
+}
