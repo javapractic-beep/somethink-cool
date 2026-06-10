@@ -787,6 +787,32 @@
                 }
             };
 
+            const handleDeletePost = async (postId) => {
+                if (!window.confirm('Удалить этот пост?')) return;
+
+                try {
+                    const sessionId = localStorage.getItem('sessionId');
+                    const res = await fetch(`/posts/${activeBoard}/${postId}`, {
+                        method: 'DELETE',
+                        headers: { 'x-session-id': sessionId },
+                    });
+
+                    if (!res.ok) {
+                        const errorData = await res.json().catch(() => null);
+                        throw new Error(errorData?.error || 'Ошибка при удалении поста');
+                    }
+
+                    setPosts(prev => ({
+                        ...prev,
+                        [activeBoard]: (prev[activeBoard] || []).filter(post => post.id !== postId),
+                    }));
+                    alert('✅ Пост удалён');
+                } catch (err) {
+                    console.error('ошибка при удалении поста', err);
+                    alert(`❌ ${err.message}`);
+                }
+            };
+
             const handleCommentSubmit = async (e, postId) => {
                 e.preventDefault();
                 if (!commentContent.trim()) return;
@@ -944,6 +970,15 @@
                                                                 {post.media.originalName || 'Скачать файл'}
                                                             </a>
                                                         )}
+                                                        <div style={{ marginTop: '10px' }}>
+                                                            <a
+                                                                className="post-action"
+                                                                href={post.media.url}
+                                                                download={post.media.originalName || ''}
+                                                            >
+                                                                ⬇️ Скачать
+                                                            </a>
+                                                        </div>
                                                     </div>
                                                 )}
                                                 <div className="post-footer">
@@ -955,6 +990,11 @@
                                                     </span>
                                                     <span className="post-action">⭐ Сохранить</span>
                                                     <span className="post-action">🚩 Пожаловаться</span>
+                                                    {user.admin && (
+                                                        <span className="post-action" onClick={() => handleDeletePost(post.id)}>
+                                                            🗑️ Удалить
+                                                        </span>
+                                                    )}
                                                 </div>
 
                                                 {showComments && (
@@ -1058,20 +1098,31 @@
             const [loading, setLoading] = useState(true);
 
             useEffect(() => {
-                // Проверяем, есть ли сохранённая сессия
                 const sessionId = localStorage.getItem('sessionId');
-                const savedUser = localStorage.getItem('user');
-
-                if (sessionId && savedUser) {
-                    try {
-                        setUser(JSON.parse(savedUser));
-                        setIsAuthenticated(true);
-                    } catch (err) {
-                        console.error('Ошибка при загрузке пользователя:', err);
-                        localStorage.clear();
-                    }
+                if (!sessionId) {
+                    setLoading(false);
+                    return;
                 }
-                setLoading(false);
+
+                fetch('/auth/user', {
+                    headers: { 'x-session-id': sessionId },
+                })
+                    .then(async (res) => {
+                        if (!res.ok) throw new Error('Не авторизован');
+                        return res.json();
+                    })
+                    .then(data => {
+                        setUser(data.user);
+                        setIsAuthenticated(true);
+                        localStorage.setItem('user', JSON.stringify(data.user));
+                    })
+                    .catch(() => {
+                        localStorage.removeItem('sessionId');
+                        localStorage.removeItem('user');
+                        setIsAuthenticated(false);
+                        setUser(null);
+                    })
+                    .finally(() => setLoading(false));
             }, []);
 
             const handleLogout = async () => {

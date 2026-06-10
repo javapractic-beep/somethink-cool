@@ -5,28 +5,32 @@
       "username": "somrchic",
       "password": "Qaz321$321",
       "email": "javapractic@gmail.com",
-      "createdAt": "27.04.2026, 16:07:16"
+      "createdAt": "27.04.2026, 16:07:16",
+      "admin": false
     },
     {
       "id": 2,
       "username": "qwerchic",
       "password": "Qaz321$321",
       "email": "javapractic@gmail.com",
-      "createdAt": "28.04.2026, 15:28:31"
+      "createdAt": "28.04.2026, 15:28:31",
+      "admin": false
     },
     {
       "id": 3,
       "username": "Anon",
       "password": "Qaz$321",
       "email": "javapractic@gmail.com",
-      "createdAt": "29.05.2026, 15:30:43"
+      "createdAt": "29.05.2026, 15:30:43",
+      "admin": false
     },
     {
       "id": 4,
       "username": "Dondon",
       "password": "Qaz321$321",
       "email": "",
-      "createdAt": "08.06.2026, 14:32:43"
+      "createdAt": "08.06.2026, 14:32:43",
+      "admin": true
     }
   ],
   "posts": {
@@ -43,20 +47,6 @@
           "originalName": "347018703159332.webp",
           "mimeType": "image/webp",
           "size": 164256
-        }
-      },
-      {
-        "id": 5,
-        "author": "test",
-        "email": "",
-        "content": "hello",
-        "time": "10.06.2026 11:59:17",
-        "comments": [],
-        "media": {
-          "url": "/uploads/1781071157279-index.html",
-          "originalName": "index.html",
-          "mimeType": "text/html",
-          "size": 46367
         }
       },
       {
@@ -119,5 +109,10 @@
     "sports": [],
     "random": []
   },
-  "sessions": {}
+  "sessions": {
+    "j55ozwaujpn": {
+      "username": "Dondon",
+      "createdAt": 1781072315203
+    }
+  }
 }

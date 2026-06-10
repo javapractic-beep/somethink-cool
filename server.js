@@ -76,6 +76,14 @@ function saveData(data) {
     fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
 }
 
+function getUserBySession(sessionId) {
+    if (!sessionId) return null;
+    const data = loadData();
+    if (!data.sessions || !data.sessions[sessionId]) return null;
+    const username = data.sessions[sessionId].username;
+    return data.users?.find(u => u.username === username) || null;
+}
+
 async function loadBoard(board) {
     if (useFirestore && db) {
         const doc = await db.collection('boards').doc(board).get();
@@ -209,6 +217,36 @@ app.post('/posts/:board/:postId/comments', async (req, res) => {
     }
 });
 
+app.delete('/posts/:board/:postId', async (req, res) => {
+    const sessionId = req.headers['x-session-id'];
+    const user = getUserBySession(sessionId);
+
+    if (!user) {
+        return res.status(401).json({ error: 'Не авторизован' });
+    }
+
+    if (!user.admin) {
+        return res.status(403).json({ error: 'Требуются права администратора' });
+    }
+
+    try {
+        const board = req.params.board;
+        const postId = parseInt(req.params.postId, 10);
+        const posts = await loadBoard(board);
+        const updatedPosts = posts.filter(p => p.id !== postId);
+
+        if (updatedPosts.length === posts.length) {
+            return res.status(404).json({ error: 'Пост не найден' });
+        }
+
+        await saveBoard(board, updatedPosts);
+        res.json({ success: true });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Ошибка при удалении поста' });
+    }
+});
+
 // ========== AUTHENTICATION ENDPOINTS ==========
 
 // Регистрация
@@ -239,6 +277,7 @@ app.post('/auth/register', (req, res) => {
             password: password, // В реальном приложении используйте bcryptjs
             email: email || '',
             createdAt: new Date().toLocaleString('ru-RU'),
+            admin: false,
         };
 
         data.users.push(newUser);
@@ -252,7 +291,7 @@ app.post('/auth/register', (req, res) => {
         res.json({
             success: true,
             sessionId,
-            user: { id: newUser.id, username: newUser.username, email: newUser.email },
+            user: { id: newUser.id, username: newUser.username, email: newUser.email, admin: newUser.admin },
         });
     } catch (err) {
         console.error(err);
@@ -287,7 +326,7 @@ app.post('/auth/login', (req, res) => {
         res.json({
             success: true,
             sessionId,
-            user: { id: user.id, username: user.username, email: user.email },
+            user: { id: user.id, username: user.username, email: user.email, admin: user.admin || false },
         });
     } catch (err) {
         console.error(err);
@@ -317,7 +356,7 @@ app.get('/auth/user', (req, res) => {
         }
 
         res.json({
-            user: { id: user.id, username: user.username, email: user.email },
+            user: { id: user.id, username: user.username, email: user.email, admin: user.admin || false },
         });
     } catch (err) {
         console.error(err);
