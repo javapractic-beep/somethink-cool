@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const cors = require('cors');
+const multer = require('multer');
 
 const app = express();
 app.use(cors());
@@ -43,6 +44,21 @@ if (serviceAccount) {
         useFirestore = false;
     }
 }
+
+const uploadPath = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadPath),
+    filename: (req, file, cb) => {
+        const safeName = `${Date.now()}-${file.originalname.replace(/[^a-zA-Z0-9.-_]/g, '_')}`;
+        cb(null, safeName);
+    },
+});
+
+const upload = multer({ storage });
 
 function loadData() {
     try {
@@ -96,11 +112,14 @@ app.get('/posts/:board', async (req, res) => {
     }
 });
 
-app.post('/posts/:board', async (req, res) => {
+app.post('/posts/:board', upload.single('media'), async (req, res) => {
     const board = req.params.board;
     const { author, email, content } = req.body;
-    if (!content || !content.trim()) {
-        return res.status(400).json({ error: 'Пустой контент' });
+
+    const hasContent = content && content.trim();
+    const hasMedia = !!req.file;
+    if (!hasContent && !hasMedia) {
+        return res.status(400).json({ error: 'Пост должен содержать текст или медиа' });
     }
 
     try {
@@ -109,10 +128,19 @@ app.post('/posts/:board', async (req, res) => {
             id: (posts.length ? Math.max(...posts.map(p => p.id)) : 0) + 1,
             author: author || 'Аноним',
             email: email || '',
-            content: content,
+            content: content || '',
             time: new Date().toLocaleString('ru-RU').replace(',', ''),
             comments: [],
         };
+
+        if (req.file) {
+            newPost.media = {
+                url: `/uploads/${req.file.filename}`,
+                originalName: req.file.originalname,
+                mimeType: req.file.mimetype,
+                size: req.file.size,
+            };
+        }
 
         posts.unshift(newPost);
         await saveBoard(board, posts);

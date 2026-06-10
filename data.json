@@ -32,6 +32,34 @@
   "posts": {
     "general": [
       {
+        "id": 6,
+        "author": "Dondon",
+        "email": "",
+        "content": "",
+        "time": "10.06.2026 12:02:17",
+        "comments": [],
+        "media": {
+          "url": "/uploads/1781071337976-347018703159332.webp",
+          "originalName": "347018703159332.webp",
+          "mimeType": "image/webp",
+          "size": 164256
+        }
+      },
+      {
+        "id": 5,
+        "author": "test",
+        "email": "",
+        "content": "hello",
+        "time": "10.06.2026 11:59:17",
+        "comments": [],
+        "media": {
+          "url": "/uploads/1781071157279-index.html",
+          "originalName": "index.html",
+          "mimeType": "text/html",
+          "size": 46367
+        }
+      },
+      {
         "id": 4,
         "author": "Dondon",
         "email": "",
@@ -90,5 +118,6 @@
     "dramas": [],
     "sports": [],
     "random": []
-  }
+  },
+  "sessions": {}
 }

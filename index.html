@@ -265,6 +265,16 @@
             margin-bottom: 12px;
         }
 
+        .post-media {
+            margin-bottom: 12px;
+        }
+
+        .post-media img,
+        .post-media video {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
         .post-footer {
             display: flex;
             gap: 15px;
@@ -503,7 +513,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState, useEffect, useRef } = React;
 
         const boards = [
             { id: 1, name: '📢 Общее', key: 'general' },
@@ -676,6 +686,8 @@
             const [author, setAuthor] = useState(user.username);
             const [email, setEmail] = useState(user.email || '');
             const [content, setContent] = useState('');
+            const [mediaFile, setMediaFile] = useState(null);
+            const mediaInputRef = useRef(null);
 
             const [expandedComments, setExpandedComments] = useState({});
             const [commentAuthor, setCommentAuthor] = useState(user.username);
@@ -705,21 +717,37 @@
 
             const handlePostSubmit = async (e) => {
                 e.preventDefault();
-                if (!content.trim()) return;
+                const hasText = content.trim().length > 0;
+                if (!hasText && !mediaFile) return;
 
                 try {
-                    const res = await fetch(`/posts/${activeBoard}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
+                    let body;
+                    const headers = {};
+
+                    if (mediaFile) {
+                        body = new FormData();
+                        body.append('author', author || 'Аноним');
+                        body.append('email', email || '');
+                        body.append('content', content || '');
+                        body.append('media', mediaFile);
+                    } else {
+                        headers['Content-Type'] = 'application/json';
+                        body = JSON.stringify({
                             author: author || 'Аноним',
                             email,
                             content,
-                        }),
+                        });
+                    }
+
+                    const res = await fetch(`/posts/${activeBoard}`, {
+                        method: 'POST',
+                        headers,
+                        body,
                     });
 
                     if (!res.ok) {
-                        throw new Error(`Ошибка ${res.status}: ${res.statusText}`);
+                        const errorData = await res.json().catch(() => null);
+                        throw new Error(errorData?.error || `Ошибка ${res.status}: ${res.statusText}`);
                     }
 
                     const newPost = await res.json();
@@ -744,6 +772,10 @@
                 setAuthor(user.username);
                 setEmail(user.email || '');
                 setContent('');
+                setMediaFile(null);
+                if (mediaInputRef.current) {
+                    mediaInputRef.current.value = '';
+                }
             };
 
             const toggleComments = async (postId) => {
@@ -771,7 +803,8 @@
                     });
 
                     if (!res.ok) {
-                        throw new Error(`Ошибка ${res.status}: ${res.statusText}`);
+                        const errorData = await res.json().catch(() => null);
+                        throw new Error(errorData?.error || `Ошибка ${res.status}: ${res.statusText}`);
                     }
 
                     const newComment = await res.json();
@@ -860,8 +893,19 @@
                                         placeholder="Ваше сообщение..."
                                         value={content}
                                         onChange={(e) => setContent(e.target.value)}
-                                        required
                                     ></textarea>
+                                    <input
+                                        ref={mediaInputRef}
+                                        type="file"
+                                        accept="image/*,video/*,audio/*"
+                                        onChange={(e) => setMediaFile(e.target.files?.[0] || null)}
+                                        style={{ marginTop: '8px' }}
+                                    />
+                                    {mediaFile && (
+                                        <div style={{ fontSize: '0.9em', color: '#555', marginTop: '6px' }}>
+                                            Выбран файл: {mediaFile.name}
+                                        </div>
+                                    )}
                                     <button type="submit" className="btn btn-primary">Отправить пост</button>
                                 </form>
                             </div>
@@ -887,6 +931,21 @@
                                                     <span className="post-time">{post.time}</span>
                                                 </div>
                                                 <div className="post-content">{post.content}</div>
+                                                {post.media && (
+                                                    <div className="post-media">
+                                                        {post.media.mimeType?.startsWith('image') ? (
+                                                            <img src={post.media.url} alt={post.media.originalName || 'Медиа'} />
+                                                        ) : post.media.mimeType?.startsWith('video') ? (
+                                                            <video controls src={post.media.url}></video>
+                                                        ) : post.media.mimeType?.startsWith('audio') ? (
+                                                            <audio controls src={post.media.url}></audio>
+                                                        ) : (
+                                                            <a href={post.media.url} target="_blank" rel="noreferrer">
+                                                                {post.media.originalName || 'Скачать файл'}
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                )}
                                                 <div className="post-footer">
                                                     <span
                                                         className="post-action"
